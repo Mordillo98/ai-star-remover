@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local dev server with pretty-URL resolution — same clean URLs Cloudflare
+"""Local dev server with pretty-URL resolution — same clean URLs GitHub
 Pages serves in production. Usage: python3 serve.py [port]  (default 8765)"""
 import os, sys
 from http.server import HTTPServer, SimpleHTTPRequestHandler
