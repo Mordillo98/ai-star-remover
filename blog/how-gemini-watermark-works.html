@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How the Gemini watermark works — technical · AI Star Remover</title>
+  <meta name="description" content="The math behind the Gemini sparkle: alpha blending, the alpha map, patch position, and why it's exactly reversible.">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header>
+  <nav class="plate-strip" aria-label="site navigation">
+    <span class="mark">✦</span><a href="/">AI Star Remover</a><span class="spacer"></span>
+    <a href="/blog/remove-gemini-watermark">Guide</a>
+    <a href="/blog/how-gemini-watermark-works">Method</a>
+    <a href="/blog/is-gemini-watermark-copyrighted">Law</a>
+    <a href="/about">About</a>
+    <span class="coord">ISSUE 01</span>
+  </nav>
+</header>
+
+<main class="prose wrap" style="max-width:760px">
+  <div class="kicker" style="margin:18px 0 8px;color:var(--ember);font:500 12px 'JetBrains Mono',monospace">§ TECHNICAL / 02</div>
+  <h1 style="font-size:clamp(2.2rem,5vw,3.4rem);margin:0 0 14px">How the watermark <em class="serif" style="color:var(--ember)">works</em></h1>
+  <p class="lead" style="color:var(--ink-2);max-width:54ch">Why a tiny star can be stripped perfectly while a photographer's watermark can't. Spoiler: it's an alpha blend with a fixed, public map.</p>
+
+  <h2>An alpha blend, not a paste</h2>
+  <p>A normal watermark is a semi-transparent image placed on top, its own colors mixing with the background. The Gemini sparkle is different: a blend of <b>pure white</b> (255) into the corner of your image under a fixed <b>alpha map</b>.</p>
+  <pre><code>watermarked = alpha × 255 + (1 − alpha) × original</code></pre>
+  <p>Where the star is solid, alpha is near 1 (pixel → white); where the star is absent, alpha is 0 (pixel untouched); in between, the soft anti-aliased edge.</p>
+
+  <h2>The alpha map</h2>
+  <p>A grayscale image of the star itself. Read as a 2D array of alphas in <span class="mono">[0,1]</span>. Two fixed sizes:</p>
+  <ul>
+    <li><span class="mono">bg_48.png</span> — 48×48, both dimensions ≤ 1024, 32px margin.</li>
+    <li><span class="mono">bg_96.png</span> — 96×96, larger than 1024², 64px margin.</li>
+  </ul>
+  <p>Published openly (MIT) by the gemini-watermark-remover project. Not secret — anyone can use them.</p>
+
+  <h2>Patch position</h2>
+  <pre><code>size   = 96  if (w &gt; 1024 and h &gt; 1024) else 48
+margin = 64  if large else 32
+x = width  − margin − size
+y = height − margin − size</code></pre>
+  <p>You only touch a <span class="mono">size × size</span> rectangle at <span class="mono">(x, y)</span>. The rest is untouched.</p>
+
+  <h2>Why it's exactly reversible</h2>
+  <p>The blend is a linear equation in one unknown. Solve:</p>
+  <pre><code>original = (watermarked − alpha × 255) / (1 − alpha)</code></pre>
+  <p>Run each channel through it, clamp to <span class="mono">[0,255]</span>, round. No estimation, no artifacts — except where JPEG already discarded information (small residual).</p>
+
+  <h3>Threshold &amp; clamping</h3>
+  <ul>
+    <li><b>Skip near-zero alpha</b> (<span class="mono">&lt; 0.002</span>) — outside the star, divides by ~1.</li>
+    <li><b>Cap at 0.99</b> — the star's core is near-opaque; capping avoids dividing by ~0.</li>
+    <li><b>Clamp [0,255]</b> — rounding can overshoot; clamping keeps a valid pixel.</li>
+  </ul>
+
+  <h2>Why it doesn't apply to real watermarks</h2>
+  <p>A photographer's watermark brings its own colors and partial transparency, and you don't have the alpha map or overlay color. The equation is underdetermined — many originals could produce that watermarked pixel — so you must <em class="serif">guess</em> (inpaint, clone, AI-fill). Approximate. The Gemini sparkle is exact because it's a fixed, known, public overlay.</p>
+
+  <h2>SynthID, separately</h2>
+  <p>SynthID is a different mechanism: subtle perturbations spread across the whole image, no fixed patch, no public map, built to survive editing. Not an alpha blend, nothing linear to invert. That's why the visible sparkle removes and SynthID doesn't.</p>
+
+  <p style="margin-top:40px"><a href="/">→ See it run in your browser</a></p>
+  <p style="font-size:.85em;color:var(--muted)" class="mono">Alpha maps MIT-licensed from gemini-watermark-remover. “Gemini” is a Google LLC trademark; this site is independent and unaffiliated.</p>
+</main>
+
+<footer>
+  © <span id="yr"></span> AI Star Remover &nbsp;·&nbsp;
+  <a href="/privacy">Privacy</a> &nbsp;·&nbsp; <a href="/terms">Terms</a> &nbsp;·&nbsp; <a href="/about">About</a> &nbsp;·&nbsp; <a href="/contact">Contact</a>
+  &nbsp;·&nbsp; set in Inter, JetBrains Mono &amp; Instrument Serif
+</footer>
+<script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+</body>
+</html>

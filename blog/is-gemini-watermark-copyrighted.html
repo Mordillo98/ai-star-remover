@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Is the Gemini watermark copyrighted? — law · AI Star Remover</title>
+  <meta name="description" content="Is the Gemini sparkle a copyright notice? Does DMCA §1202 apply to AI watermark removal? A plain-language explainer.">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header>
+  <nav class="plate-strip" aria-label="site navigation">
+    <span class="mark">✦</span><a href="/">AI Star Remover</a><span class="spacer"></span>
+    <a href="/blog/remove-gemini-watermark">Guide</a>
+    <a href="/blog/how-gemini-watermark-works">Method</a>
+    <a href="/blog/is-gemini-watermark-copyrighted">Law</a>
+    <a href="/about">About</a>
+    <span class="coord">ISSUE 01</span>
+  </nav>
+</header>
+
+<main class="prose wrap" style="max-width:760px">
+  <div class="kicker" style="margin:18px 0 8px;color:var(--ember);font:500 12px 'JetBrains Mono',monospace">§ LAW / 03</div>
+  <h1 style="font-size:clamp(2.2rem,5vw,3.4rem);margin:0 0 14px">Is the watermark <em class="serif" style="color:var(--ember)">copyrighted?</em></h1>
+  <p class="lead" style="color:var(--ink-2);max-width:54ch">The answer turns on what the mark legally <em class="serif">is</em>. Plain-language overview, not legal advice.</p>
+
+  <h2>Two things people call a “watermark”</h2>
+  <ul>
+    <li><b>A copyright/authorship watermark</b> — a photographer's name, a stock-site logo. It identifies the rights holder.</li>
+    <li><b>A provenance watermark</b> — a mark stating <em>how</em> content was made (e.g. AI), not <em>who owns</em> it. The Gemini sparkle is this kind.</li>
+  </ul>
+
+  <h2>What DMCA §1202 protects</h2>
+  <p>17 U.S.C. §1202 makes it illegal to strip <b>copyright management information</b> — title, author, copyright notice — in order to hide or misrepresent authorship. Its purpose is to stop passing off someone else's work by scrubbing credits. The Gemini sparkle doesn't identify an author or assert copyright; it says "this was made with an AI tool." So a colorable argument is that §1202 — aimed at authorship attribution — isn't squarely aimed at AI-provenance marks. The §1202 case law is almost all about photographer credits and stock metadata, not AI stamps.</p>
+
+  <h2>So is removing it legal?</h2>
+  <p>Removing a cosmetic provenance mark from an image you have the rights to is generally not prohibited by §1202 — you're already the author, so you're not concealing authorship. The bigger question is almost always the <em>image itself</em>, not the mark:</p>
+  <ul>
+    <li><b>You generated it</b> with Gemini: you generally own the output and can edit it (subject to Google's terms and local rules).</li>
+    <li><b>Someone else's image</b>: removing the mark gives you no rights to the underlying image. Copyright in the image is separate from the mark on it.</li>
+  </ul>
+  <p class="callout"><em>Rule of thumb:</em> only remove the sparkle from images you own or are licensed to use. Removing a mark never creates rights you didn't already have.</p>
+
+  <h2>Disclosure can matter more than the law</h2>
+  <p>Where removal is lawful, <em>disclosure rules</em> can still bite. Platforms and jurisdictions increasingly require AI-content labels. Strip the mark and publish without disclosing, and the problem is the missing disclosure, not pixel-editing. Removing the corner star for design reasons <em>while still labelling the image as AI-made</em> is very different from passing it off as non-AI.</p>
+
+  <h2>SynthID</h2>
+  <p>Gemini images also carry invisible <b>SynthID</b> — an imperceptible statistical signature built to survive editing for later identification. It's a provenance/anti-misuse tool, not a copyright tool. Our tool removes only the visible sparkle and does not touch SynthID. Trying to defeat SynthID is a different, adversarial category of activity.</p>
+
+  <h2>The takeaway</h2>
+  <ol>
+    <li>The sparkle is a provenance indicator, not a copyright notice.</li>
+    <li>Removing it isn't generally a §1202 problem when you own the image.</li>
+    <li>Removal grants no rights to the image — and disclosure rules may still apply.</li>
+    <li>Only edit images you have rights to; be honest about AI provenance where required.</li>
+  </ol>
+  <p style="font-size:.85em;color:var(--muted)" class="mono">General information, not legal advice. Confirm with a lawyer for your specific situation.</p>
+</main>
+
+<footer>
+  © <span id="yr"></span> AI Star Remover &nbsp;·&nbsp;
+  <a href="/privacy">Privacy</a> &nbsp;·&nbsp; <a href="/terms">Terms</a> &nbsp;·&nbsp; <a href="/about">About</a> &nbsp;·&nbsp; <a href="/contact">Contact</a>
+  &nbsp;·&nbsp; set in Inter, JetBrains Mono &amp; Instrument Serif
+</footer>
+<script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+</body>
+</html>

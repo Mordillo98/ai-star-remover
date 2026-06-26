@@ -1,0 +1,147 @@
+/* ── AI Star Remover — shared theme.
+   Black, minimal. Warm near-black (not the cold #0a0a0c AI default), one
+   ember-red accent, three type roles: sans / mono / serif-italic.
+   Intent: a quiet darkroom, not a SaaS dashboard. ── */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+
+:root {
+  --bg:     #0c0b0a;   /* warm near-black, not #0a0a0c */
+  --bg-2:   #131210;   /* one shade up, for surfaces */
+  --ink:    #e7e3da;   /* warm paper-white for text */
+  --ink-2:  #9a9388;
+  --muted:  #6a645b;
+  --rule:   #221f1c;
+  --ember:  #d2503f;   /* safelight red — the one accent */
+  --ember-2:#e6694f;
+  --ok:     #7fae6a;
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  margin:0; background:var(--bg); color:var(--ink);
+  font:17px/1.65 'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+.mono { font-family:'JetBrains Mono',ui-monospace,monospace; }
+.serif { font-family:'Instrument Serif',serif; font-weight:400; }
+
+.wrap, header, main, footer { max-width:1040px; margin:0 auto; padding:0 28px; }
+
+/* ── Nav: thin strip, exact-width links in a row. Minimal. ── */
+header { padding-top:8px; }
+.plate-strip {
+  display:flex; align-items:center; gap:22px;
+  border-bottom:1px solid var(--rule);
+  padding:0 0 8px; margin-bottom:16px;
+  font:500 12px/1 'JetBrains Mono',monospace; letter-spacing:0.02em;
+  color:var(--ink-2); overflow-x:auto; white-space:nowrap;
+}
+.plate-strip .mark { color:var(--ember); font-weight:600; }
+.plate-strip a { color:var(--ink-2); text-decoration:none; }
+.plate-strip a:hover { color:var(--ember); }
+.plate-strip .spacer { flex:1; }
+.plate-strip .coord { color:var(--muted); }
+.plate-strip .badge { color:var(--ink-2); white-space:nowrap; }
+
+h1 { font-weight:600; letter-spacing:-0.025em; line-height:1.04; }
+h2 { font-weight:600; letter-spacing:-0.015em; line-height:1.15; }
+a { color:var(--ember-2); }
+
+/* ── Hero + tool in one viewport. Left: headline/lead/CTA. Right: drop + preview. ── */
+.hero-tool { display:grid; grid-template-columns:1fr 1fr; gap:38px; align-items:start; margin-bottom:24px; }
+.hero-left h1 { font-size:clamp(2rem,4vw,3.1rem); margin:0 0 16px; }
+.hero-left h1 em { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; color:var(--ember); }
+.hero-left p.lead { font-size:1rem; color:var(--ink-2); max-width:38ch; margin:0 0 22px; }
+
+.hero-right { display:flex; flex-direction:column; gap:14px; }
+.hero-right .drop { padding:0 0 2px; display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
+.hero-right .drop .verb { font-size:1.25rem; display:block; }
+.hero-right .drop .note { font-size:11px; display:block; text-decoration:underline; }
+.hero-right .drop input[type=file] { margin-top:4px; max-width:320px; }
+
+/* ── Preview frames: fixed-height boxes so big images never cause scroll. ── */
+.preview .frame { position:relative; height:154px; border:none; border-radius:0; overflow:hidden; background:transparent; display:flex; align-items:center; justify-content:center; }
+.preview .frame img { max-width:100%; max-height:100%; object-fit:contain; display:block; }
+.preview .frame .tag { position:absolute; top:6px; left:6px; font:500 10px/1 'JetBrains Mono',monospace; color:var(--muted); background:rgba(12,11,10,.72); padding:2px 5px; border-radius:2px; }
+.preview .frame .tag.ok { color:var(--ok); }
+.preview img { max-width:100%; border-radius:3px; display:block; }
+.preview .ba { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+/* ── Inline controls in the hero-right column ── */
+.hero-right .status { font:500 12px/1.3 'JetBrains Mono',monospace; color:var(--ink-2); min-height:1.1em; }
+.hero-right .status.ok { color:var(--ok); } .hero-right .status.err { color:var(--ember); }
+
+.panel { font:500 13px/1.6 'JetBrains Mono',monospace; color:var(--ink-2); margin-top:20px; }
+.panel dt { color:var(--muted); margin-top:14px; }
+.panel dt:first-child { margin-top:0; }
+.panel dd { margin:2px 0 0; }
+.panel .ok { color:var(--ok); }
+.panel .err { color:var(--ember); }
+
+button, .btn {
+  font:600 15px 'Inter',sans-serif; cursor:pointer; border:1px solid var(--rule);
+  background:transparent; color:var(--ink); padding:11px 18px; border-radius:3px;
+  transition:color .15s, border-color .15s;
+}
+button:hover, .btn:hover { color:var(--ember); border-color:var(--ember); }
+.btn-go { background:var(--ember); color:#fff; border-color:var(--ember); }
+.btn-go:hover { background:var(--ember-2); border-color:var(--ember-2); color:#fff; }
+.btn-cl { border-color:var(--rule); color:var(--ink-2); }
+.btn-dl { background:var(--ok); color:#fff; border-color:var(--ok); transition:background .15s, border-color .15s; }
+.btn-dl:hover { background:#96c97e; border-color:#96c97e; color:#fff; }
+.btn-purp { background:var(--ember); color:#fff; border-color:var(--ember); }
+.btn-purp:hover { background:var(--ember-2); border-color:var(--ember-2); color:#fff; }
+.row { display:flex; gap:12px; flex-wrap:nowrap; align-items:center; margin:18px 0 0; }
+.timer { font:500 12px 'JetBrains Mono',monospace; color:var(--ok); white-space:nowrap; }
+.status { font:500 13px 'JetBrains Mono',monospace; color:var(--ink-2); min-height:1.4em; }
+.hidden { display:none; }
+
+/* ── Sections ── */
+.section { margin-bottom:88px; }
+.section .kicker { font:500 12px 'JetBrains Mono',monospace; color:var(--ember); margin-bottom:14px; }
+.aside-grid { display:grid; grid-template-columns:5fr 7fr; gap:48px; }
+.aside-grid .narrow { color:var(--ink-2); }
+.callout { border-left:2px solid var(--ember); padding:4px 0 4px 18px; margin:22px 0; color:var(--ink-2); }
+.callout em { font-family:'Instrument Serif',serif; font-style:italic; color:var(--ink); }
+code { font-family:'JetBrains Mono',monospace; font-size:.9em; background:var(--bg-2); padding:1px 5px; border-radius:2px; }
+pre { background:var(--bg-2); color:var(--ink); border:1px solid var(--rule); border-radius:3px; padding:16px 18px; overflow-x:auto; font:500 13px/1.5 'JetBrains Mono',monospace; }
+pre code { background:none; padding:0; color:inherit; }
+
+.prose h2 { margin:1.8em 0 .5em; }
+.prose p { margin:.7em 0; }
+.prose ul, .prose ol { padding-left:1.3em; }
+.prose img { max-width:100%; border-radius:3px; }
+.prose .lead { font-size:1.18rem; color:var(--ink); }
+
+.tble { width:100%; border-collapse:collapse; font-size:.95rem; }
+.tble th, .tble td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--rule); }
+.tble th { font:600 12px 'JetBrains Mono',monospace; color:var(--muted); letter-spacing:0; }
+
+/* ── Reading list ── */
+.reading { border-top:1px solid var(--rule); padding-top:8px; }
+.reading a {
+  display:grid; grid-template-columns:54px 1fr 130px; gap:18px; align-items:baseline;
+  text-decoration:none; color:var(--ink); padding:18px 0; border-bottom:1px solid var(--rule);
+  transition:color .15s;
+}
+.reading a:hover .ttl { color:var(--ember); }
+.reading .no { font:500 12px 'JetBrains Mono',monospace; color:var(--muted); }
+.reading .ttl { font-weight:600; letter-spacing:-0.01em; }
+.reading .dsc { font-size:.85rem; color:var(--ink-2); margin-top:3px; }
+.reading .kind { font:500 12px 'JetBrains Mono',monospace; color:var(--ember); text-align:right; }
+
+footer { border-top:1px solid var(--rule); margin-top:8px; padding:18px 28px 22px;
+  font:500 12px/1.6 'JetBrains Mono',monospace; color:var(--ink-2); }
+footer a { color:var(--ink-2); text-decoration:none; }
+footer a:hover { color:var(--ember); }
+
+@media (max-width:760px){
+  .hero-tool { grid-template-columns:1fr; gap:32px; }
+  .aside-grid { grid-template-columns:1fr; gap:32px; }
+  .reading a { grid-template-columns:40px 1fr; }
+  .reading .kind { display:none; }
+  .preview .ba { grid-template-columns:1fr; }
+  .plate-strip { margin-bottom:16px; gap:16px; }
+  .preview .frame { height:168px; border:none; }
+}

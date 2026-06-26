@@ -1,0 +1,10 @@
+# Cloudflare Pages clean URLs (pretty-URL fallback). Pretty URLs are on by default,
+# these explicit rewrites ensure /privacy etc. serve /privacy.html on any host.
+/privacy        /privacy.html        200
+/terms          /terms.html          200
+/about          /about.html          200
+/contact        /contact.html        200
+/blog/remove-gemini-watermark              /blog/remove-gemini-watermark.html              200
+/blog/is-gemini-watermark-copyrighted       /blog/is-gemini-watermark-copyrighted.html       200
+/blog/free-ai-watermark-removers-2026      /blog/free-ai-watermark-removers-2026.html      200
+/blog/how-gemini-watermark-works            /blog/how-gemini-watermark-works.html            200

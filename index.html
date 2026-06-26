@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Star Remover — take the sparkle off a Gemini image</title>
+  <meta name="description" content="Remove the Google Gemini star watermark from an image. Free, instant, 100% private — the image is processed in your browser and never uploaded.">
+  <meta property="og:title" content="AI Star Remover — take the sparkle off a Gemini image">
+  <meta property="og:description" content="100% in-browser. No upload, no logs, nothing stored.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header>
+  <nav class="plate-strip" aria-label="site navigation">
+    <span class="mark">✦</span>
+    <span>AI Star Remover</span>
+    <span class="spacer"></span>
+    <span class="badge">100% free · no login · no upload</span>
+  </nav>
+</header>
+
+<main>
+
+  <!-- HERO + TOOL in one viewport. Left: headline/lead/CTA. Right: drop + preview. ─ -->
+  <section class="hero-tool">
+    <div class="hero-left">
+      <h1>Take the <em>sparkle</em> off a Gemini image.</h1>
+      <p class="lead">A free, private correction for the small star Google stamps into the corner of every Gemini picture. Runs in your browser. Nothing uploads. Nothing is kept.</p>
+      <button class="btn-purp" onclick="document.getElementById('file').click()">Drop an image in →</button>
+    </div>
+
+    <div class="hero-right">
+      <label class="drop" id="drop" for="file">
+        <span class="verb">Drop an image, or choose a file.</span>
+        <span class="note">ORIGINAL/UNMODIFIED PNG FILES ONLY</span>
+        <input id="file" type="file" accept="image/png">
+      </label>
+      <div class="preview" id="preview"></div>
+      <div class="status" id="status"></div>
+    </div>
+  </section>
+
+  <!-- Page ends here, by design. Method & reading live on the blog. -->
+
+</main>
+
+<footer>© <span id="yr"></span> AI Star Remover &nbsp;·&nbsp; <a href="/privacy">Privacy</a></footer>
+
+
+<script>
+// ── The tool: reverse alpha blend, client-side. With live upload preview. ──
+(async function () {
+  function loadAlphaCanvas(src,n){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');c.width=c.height=n;c.getContext('2d').drawImage(i,0,0,n,n);res(c);};i.onerror=rej;i.src=src;});}
+  const [a48,a96]=await Promise.all([loadAlphaCanvas('assets/bg_48.png',48),loadAlphaCanvas('assets/bg_96.png',96)]);
+
+  const drop=document.getElementById('drop'),fileInput=document.getElementById('file');
+  fileInput.value=''; // clear any Firefox-restored file on reload
+  const statusEl=document.getElementById('status'),previewEl=document.getElementById('preview');
+  let srcBitmap=null,srcName=null,srcUrl=null,timer=null,lastOutUrl=null;
+
+  function setStatus(m,c){statusEl.textContent=m||'';statusEl.className='status'+(c?' '+c:'');}
+  function revokeOut(){ if(lastOutUrl){URL.revokeObjectURL(lastOutUrl);lastOutUrl=null;} }
+  function armClear(){ if(timer)clearTimeout(timer); timer=setTimeout(()=>clear(true),30*1000); }
+  function clearTimerObj(){ if(timer){clearTimeout(timer);timer=null;} if(srcUrl){URL.revokeObjectURL(srcUrl);srcUrl=null;} }
+
+  function loadFile(file,native){
+    if(!file)return;
+    if(file.type!=='image/png' && !/\.png$/i.test(file.name)){
+      setStatus('PNG files only.','err');return;
+    }
+    if(!native){const dt=new DataTransfer();dt.items.add(file);fileInput.files=dt.files;}
+    clearTimerObj();revokeOut();previewEl.innerHTML='';
+    srcName=file.name;
+    createImageBitmap(file).then(b=>{
+      srcBitmap=b;
+      if(srcUrl)URL.revokeObjectURL(srcUrl);
+      srcUrl=URL.createObjectURL(file);
+      setStatus(`Processing ${file.name}…`);
+      remove();
+    }).catch(e=>setStatus('Could not load: '+e.message,'err'));
+  }
+  document.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag');});
+  document.addEventListener('dragleave',e=>{if(!e.relatedTarget&&e.clientX===0&&e.clientY===0)drop.classList.remove('drag');});
+  document.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');loadFile(e.dataTransfer.files[0]);});
+  fileInput.addEventListener('change',e=>loadFile(e.target.files[0],true));
+  fileInput.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();loadFile(e.dataTransfer.files[0]);});
+
+
+  function remove(){
+    if(!srcBitmap)return;
+    setStatus('Processing…');
+    const w=srcBitmap.width,h=srcBitmap.height;
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext('2d');ctx.drawImage(srcBitmap,0,0);
+    const imgData=ctx.getImageData(0,0,w,h),data=imgData.data;
+    const large=w>1024&&h>1024, src=large?a96:a48, n=large?96:48, margin=large?64:32;
+    const x0=w-margin-n,y0=h-margin-n;
+    if(x0<0||y0<0){setStatus('Image too small for the patch.','err');return;}
+    const ad=src.getContext('2d').getImageData(0,0,n,n).data;
+    const TH=0.002,MAXA=0.99,L=255;let changed=0;
+    for(let r=0;r<n;r++)for(let c=0;c<n;c++){
+      let alpha=ad[(r*n+c)*4]/255; if(alpha<TH)continue; alpha=Math.min(alpha,MAXA);
+      const px=((y0+r)*w+(x0+c))*4;
+      for(let k=0;k<3;k++){const wm=data[px+k],o=(wm-alpha*L)/(1-alpha),v=Math.max(0,Math.min(255,Math.round(o)));
+        if(Math.abs(v-wm)>5)changed++; data[px+k]=v;}
+    }
+    ctx.putImageData(imgData,0,0);
+    canvas.toBlob(blob=>{
+      revokeOut();
+      lastOutUrl=URL.createObjectURL(blob);
+      const base=srcName.replace(/\.[^.]+$/,'');
+      const a=document.createElement('a');a.href=lastOutUrl;a.download=base+'_clean.png';
+      const beforeUrl=srcUrl;
+
+      previewEl.innerHTML =
+        `<div class="ba">
+           <div class="frame"><img src="${beforeUrl}" alt="before"><span class="tag">before</span></div>
+           <div class="frame"><img src="${lastOutUrl}" alt="after"><span class="tag ok">after · ✓</span></div>
+         </div>
+         <div class="row"><button class="btn-dl" id="dl">Download the clean image</button><button class="btn-purp" id="again">CLEAR</button><span class="timer" id="t">auto-clears in 30s</span></div>`;
+      document.getElementById('dl').onclick=()=>a.click();
+      document.getElementById('again').onclick=()=>clear(false);
+      setStatus('');
+      (function(){let s=30;const el=document.getElementById('t');const iv=setInterval(()=>{s--;if(s<=0){clearInterval(iv);return;}el.textContent=`auto-clears in ${s}s`;},1000);})();
+      armClear();
+    },'image/png');
+  }
+  function clear(auto){
+    clearTimerObj();revokeOut();previewEl.innerHTML='';
+    srcBitmap=null;srcName=null;fileInput.value='';
+    setStatus('');
+  }
+})();
+document.getElementById('yr').textContent=new Date().getFullYear();
+</script>
+</body>
+</html>

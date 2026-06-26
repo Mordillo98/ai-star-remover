@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Free AI watermark removers in 2026 — comparison · AI Star Remover</title>
+  <meta name="description" content="Honest comparison of free tools for removing the Gemini sparkle and other AI watermarks — privacy, precision, effort, and what to avoid.">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header>
+  <nav class="plate-strip" aria-label="site navigation">
+    <span class="mark">✦</span><a href="/">AI Star Remover</a><span class="spacer"></span>
+    <a href="/blog/remove-gemini-watermark">Guide</a>
+    <a href="/blog/how-gemini-watermark-works">Method</a>
+    <a href="/blog/is-gemini-watermark-copyrighted">Law</a>
+    <a href="/about">About</a>
+    <span class="coord">ISSUE 01</span>
+  </nav>
+</header>
+
+<main class="prose wrap" style="max-width:760px">
+  <div class="kicker" style="margin:18px 0 8px;color:var(--ember);font:500 12px 'JetBrains Mono',monospace">§ COMPARE / 04</div>
+  <h1 style="font-size:clamp(2.2rem,5vw,3.4rem);margin:0 0 14px">Free AI watermark removers, <em class="serif" style="color:var(--ember)">2026</em></h1>
+  <p class="lead" style="color:var(--ink-2);max-width:54ch">Several free ways exist. They're not equal on precision, privacy, or effort. Here's the honest table — including the one on this site.</p>
+
+  <h2>The comparison</h2>
+  <div style="overflow-x:auto">
+  <table class="tble">
+    <thead><tr><th>Method</th><th>Precision</th><th>Privacy</th><th>Effort</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td>This tool (exact reversal)</td><td>High</td><td>100% in-browser</td><td>One click</td><td>Free</td></tr>
+      <tr><td>Photoshop / clone stamp</td><td>High (manual)</td><td>Local</td><td>Per-image</td><td>Paid app</td></tr>
+      <tr><td>AI object-eraser webs</td><td>Varies</td><td>Often uploads</td><td>One click</td><td>Free/limited</td></tr>
+      <tr><td>Cropping the corner</td><td>∞ (gone)</td><td>Local</td><td>Trivial</td><td>Free</td></tr>
+      <tr><td>Photopea (free editor)</td><td>High (manual)</td><td>In-browser</td><td>Per-image</td><td>Free</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>1. Exact reversal (this site)</h2>
+  <p>The Gemini sparkle is an alpha blend with a fixed, published map — so you compute the original, not guess it. Most precise for this specific mark, and in-browser so nothing uploads. Trade-off: only targets the Gemini sparkle in its known position; a moved or distorted mark won't match. <a href="/">Try it →</a></p>
+
+  <h2>2. Cropping the corner</h2>
+  <p>The laziest solution that actually works: the star sits bottom-right, so crop a few percent. No tool, perfect privacy, zero artifacts in what remains — but you lose area.</p>
+
+  <h2>3. Photoshop / Photopea (clone stamp)</h2>
+  <p>Clone-stamping works on any watermark and stays local. Manual and slow per image; result depends on your hand. Photopea is a capable free, in-browser alternative.</p>
+
+  <h2>4. Generic AI “object eraser” webs</h2>
+  <p>One-click, often free to a limit. The catch: many <b>upload your image</b> to process server-side. Read the privacy policy before pasting anything sensitive. Client-side is the test for private use.</p>
+
+  <h2>What to avoid</h2>
+  <ul>
+    <li><b>Tools claiming to remove SynthID</b> — it's designed to resist removal; promises are ineffective or worse.</li>
+    <li><b>Installer-bundled “free” downloaders</b> — for a corner watermark you need no desktop software.</li>
+    <li><b>Using removal to hide AI provenance where disclosure is required</b> — see <a href="/blog/is-gemini-watermark-copyrighted">the law page</a>.</li>
+  </ul>
+
+  <h2>How to choose</h2>
+  <ul>
+    <li>Precision + privacy, Gemini mark: <a href="/">this tool</a>.</li>
+    <li>Any watermark, don't mind manual work: clone stamp.</li>
+    <li>Can lose the corner: just crop.</li>
+    <li>Not the Gemini mark, want one click: a client-side AI eraser (check its policy).</li>
+  </ul>
+  <p style="font-size:.85em;color:var(--muted)" class="mono">Mentions of third-party tools are informational, not endorsements. Verify current practices on each tool's own site.</p>
+</main>
+
+<footer>
+  © <span id="yr"></span> AI Star Remover &nbsp;·&nbsp;
+  <a href="/privacy">Privacy</a> &nbsp;·&nbsp; <a href="/terms">Terms</a> &nbsp;·&nbsp; <a href="/about">About</a> &nbsp;·&nbsp; <a href="/contact">Contact</a>
+  &nbsp;·&nbsp; set in Inter, JetBrains Mono &amp; Instrument Serif
+</footer>
+<script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+</body>
+</html>
