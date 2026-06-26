@@ -52,11 +52,6 @@ serve.py                ← local dev server with pretty URLs
 assets/
   bg_48.png             ← 48px star alpha map (small images)
   bg_96.png             ← 96px star alpha map (large images)
-blog/
-  remove-gemini-watermark.html
-  how-gemini-watermark-works.html
-  is-gemini-watermark-copyrighted.html
-  free-ai-watermark-removers-2026.html
 privacy.html            ← privacy policy (100% private, no ads, no tracking)
 terms.html
 about.html

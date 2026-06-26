@@ -12,10 +12,6 @@ PRETTIES = {
     "/terms": "/terms.html",
     "/about": "/about.html",
     "/contact": "/contact.html",
-    "/blog/remove-gemini-watermark": "/blog/remove-gemini-watermark.html",
-    "/blog/how-gemini-watermark-works": "/blog/how-gemini-watermark-works.html",
-    "/blog/is-gemini-watermark-copyrighted": "/blog/is-gemini-watermark-copyrighted.html",
-    "/blog/free-ai-watermark-removers-2026": "/blog/free-ai-watermark-removers-2026.html",
 }
 
 class Handler(SimpleHTTPRequestHandler):
