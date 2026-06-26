@@ -2,6 +2,8 @@
 
 > Take the sparkle off a Gemini image.
 
+**Try it now:** https://mordillo98.github.io/ai-star-remover/
+
 A free, private, 100% client-side tool that removes the Google Gemini star watermark from images. Everything runs in your browser — no upload, no server, no tracking, no login.
 
 ## How it works
