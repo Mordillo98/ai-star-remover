@@ -9,9 +9,6 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 # Pretty URL -> file. Matches _redirects.
 PRETTIES = {
     "/privacy": "/privacy.html",
-    "/terms": "/terms.html",
-    "/about": "/about.html",
-    "/contact": "/contact.html",
 }
 
 class Handler(SimpleHTTPRequestHandler):

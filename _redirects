@@ -1,6 +1,2 @@
-# Cloudflare Pages clean URLs (pretty-URL fallback). Pretty URLs are on by default,
-# these explicit rewrites ensure /privacy etc. serve /privacy.html on any host.
+# Clean URLs (pretty-URL fallback). Works on GitHub Pages and Cloudflare Pages.
 /privacy        /privacy.html        200
-/terms          /terms.html          200
-/about          /about.html          200
-/contact        /contact.html        200

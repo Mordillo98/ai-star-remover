@@ -32,7 +32,7 @@ Each pixel in the corner patch is solved, and the star is gone — not guessed, 
 
 - Single static site — no backend, no build step
 - Vanilla HTML/CSS/JS (no frameworks, no dependencies)
-- [Cloudflare Pages](https://pages.cloudflare.com/) ready (`_redirects` + `sitemap.xml` + `robots.txt` included)
+- Hosted on [GitHub Pages](https://pages.github.com/) — free, zero config
 - Two alpha maps bundled in `assets/` — no runtime fetch
 
 ## Local dev
@@ -41,7 +41,7 @@ Each pixel in the corner patch is solved, and the star is gone — not guessed, 
 python3 serve.py      # serves at http://localhost:8765/
 ```
 
-The dev server resolves pretty URLs (same as Cloudflare Pages in production) and sends no-cache headers.
+The dev server resolves pretty URLs (same as GitHub Pages in production) and sends no-cache headers.
 
 ## Structure
 
@@ -53,18 +53,15 @@ assets/
   bg_48.png             ← 48px star alpha map (small images)
   bg_96.png             ← 96px star alpha map (large images)
 privacy.html            ← privacy policy (100% private, no ads, no tracking)
-terms.html
-about.html
-contact.html
 404.html
-_redirects              ← Cloudflare Pages redirect rules
+_redirects              ← pretty-URL redirect rules
 sitemap.xml
 robots.txt
 ```
 
 ## Deploy
 
-Push to GitHub → connect repo to Cloudflare Pages → done. No build command needed; output directory is the repo root.
+Push to GitHub → enable Pages on `main` branch → done. No build command needed; output directory is the repo root.
 
 ## Credits
 
