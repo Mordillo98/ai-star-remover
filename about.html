@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>About — AI Star Remover</title>
   <meta name="description" content="A free, private, browser-based tool that removes the visible Gemini sparkle watermark from AI images.">
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header>
   <nav class="plate-strip" aria-label="site navigation">
-    <span class="mark">✦</span><a href="/">AI Star Remover</a><span class="spacer"></span>
-    <a href="/blog/remove-gemini-watermark">Guide</a>
-    <a href="/blog/how-gemini-watermark-works">Method</a>
-    <a href="/blog/is-gemini-watermark-copyrighted">Law</a>
-    <a href="/about">About</a>
+    <span class="mark">✦</span><a href="index.html">AI Star Remover</a><span class="spacer"></span>
+    <a href="blog/remove-gemini-watermark">Guide</a>
+    <a href="blog/how-gemini-watermark-works">Method</a>
+    <a href="blog/is-gemini-watermark-copyrighted">Law</a>
+    <a href="about">About</a>
     <span class="coord">ABOUT</span>
   </nav>
 </header>
@@ -29,13 +29,13 @@
   <p>AI Star Remover removes the visible Google Gemini sparkle from AI-generated images, entirely in your browser. No upload, no server storage, no account. The math is a precise reversal of the watermark's alpha blend, so results are clean for the specific mark it targets.</p>
 
   <h2>How it works</h2>
-  <p>The watermark blends pure white into the corner under a known alpha map. We apply the inverse formula, pixel by pixel, in the Canvas API. Two alpha maps are MIT-licensed from the open-source <a href="https://github.com/dearabhin/gemini-watermark-remover" target="_blank" rel="noopener">gemini-watermark-remover</a> project. Full write-up: <a href="/blog/how-gemini-watermark-works">How the watermark works</a>.</p>
+  <p>The watermark blends pure white into the corner under a known alpha map. We apply the inverse formula, pixel by pixel, in the Canvas API. Two alpha maps are MIT-licensed from the open-source <a href="https://github.com/dearabhin/gemini-watermark-remover" target="_blank" rel="noopener">gemini-watermark-remover</a> project. Full write-up: <a href="blog/how-gemini-watermark-works">How the watermark works</a>.</p>
 
   <h2>What it doesn't do</h2>
   <ul>
     <li>Does <b>not</b> remove Google's invisible SynthID watermark.</li>
     <li><b>Not</b> affiliated with Google. “Gemini” is a Google trademark; we're independent.</li>
-    <li><b>Not</b> a license to use images you don't have rights to. See <a href="/terms">terms</a> and the <a href="/blog/is-gemini-watermark-copyrighted">legal explainer</a>.</li>
+    <li><b>Not</b> a license to use images you don't have rights to. See <a href="terms">terms</a> and the <a href="blog/is-gemini-watermark-copyrighted">legal explainer</a>.</li>
   </ul>
 
   <h2>Supporting the site</h2>
@@ -44,12 +44,12 @@
   <h2>Openness</h2>
   <p>The algorithm is simple and published openly in our articles. The same logic is available MIT-licensed in the project linked above. We're not selling anything.</p>
 
-  <p><a href="/contact">→ Get in touch</a></p>
+  <p><a href="contact">→ Get in touch</a></p>
 </main>
 
 <footer>
   © <span id="yr"></span> AI Star Remover &nbsp;·&nbsp;
-  <a href="/privacy">Privacy</a> &nbsp;·&nbsp; <a href="/terms">Terms</a> &nbsp;·&nbsp; <a href="/about">About</a> &nbsp;·&nbsp; <a href="/contact">Contact</a>
+  <a href="privacy">Privacy</a> &nbsp;·&nbsp; <a href="terms">Terms</a> &nbsp;·&nbsp; <a href="about">About</a> &nbsp;·&nbsp; <a href="contact">Contact</a>
   &nbsp;·&nbsp; set in Inter, JetBrains Mono &amp; Instrument Serif
 </footer>
 <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>

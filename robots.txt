@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://aistarremover.example/sitemap.xml
+Sitemap: https://mordillo98.github.io/ai-star-remover/sitemap.xml

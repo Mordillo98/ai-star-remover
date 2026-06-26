@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>How the Gemini watermark works — technical · AI Star Remover</title>
   <meta name="description" content="The math behind the Gemini sparkle: alpha blending, the alpha map, patch position, and why it's exactly reversible.">
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
 <header>
   <nav class="plate-strip" aria-label="site navigation">
-    <span class="mark">✦</span><a href="/">AI Star Remover</a><span class="spacer"></span>
-    <a href="/blog/remove-gemini-watermark">Guide</a>
-    <a href="/blog/how-gemini-watermark-works">Method</a>
-    <a href="/blog/is-gemini-watermark-copyrighted">Law</a>
-    <a href="/about">About</a>
+    <span class="mark">✦</span><a href="../index.html">AI Star Remover</a><span class="spacer"></span>
+    <a href="../blog/remove-gemini-watermark">Guide</a>
+    <a href="../blog/how-gemini-watermark-works">Method</a>
+    <a href="../blog/is-gemini-watermark-copyrighted">Law</a>
+    <a href="../about">About</a>
     <span class="coord">ISSUE 01</span>
   </nav>
 </header>
@@ -63,13 +63,13 @@ y = height − margin − size</code></pre>
   <h2>SynthID, separately</h2>
   <p>SynthID is a different mechanism: subtle perturbations spread across the whole image, no fixed patch, no public map, built to survive editing. Not an alpha blend, nothing linear to invert. That's why the visible sparkle removes and SynthID doesn't.</p>
 
-  <p style="margin-top:40px"><a href="/">→ See it run in your browser</a></p>
+  <p style="margin-top:40px"><a href="../index.html">→ See it run in your browser</a></p>
   <p style="font-size:.85em;color:var(--muted)" class="mono">Alpha maps MIT-licensed from gemini-watermark-remover. “Gemini” is a Google LLC trademark; this site is independent and unaffiliated.</p>
 </main>
 
 <footer>
   © <span id="yr"></span> AI Star Remover &nbsp;·&nbsp;
-  <a href="/privacy">Privacy</a> &nbsp;·&nbsp; <a href="/terms">Terms</a> &nbsp;·&nbsp; <a href="/about">About</a> &nbsp;·&nbsp; <a href="/contact">Contact</a>
+  <a href="../privacy">Privacy</a> &nbsp;·&nbsp; <a href="../terms">Terms</a> &nbsp;·&nbsp; <a href="../about">About</a> &nbsp;·&nbsp; <a href="../contact">Contact</a>
   &nbsp;·&nbsp; set in Inter, JetBrains Mono &amp; Instrument Serif
 </footer>
 <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>

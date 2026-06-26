@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://aistarremover.example/</loc><priority>1.0</priority></url>
-  <url><loc>https://aistarremover.example/blog/remove-gemini-watermark</loc><priority>0.8</priority></url>
-  <url><loc>https://aistarremover.example/blog/is-gemini-watermark-copyrighted</loc><priority>0.7</priority></url>
-  <url><loc>https://aistarremover.example/blog/free-ai-watermark-removers-2026</loc><priority>0.7</priority></url>
-  <url><loc>https://aistarremover.example/blog/how-gemini-watermark-works</loc><priority>0.7</priority></url>
-  <url><loc>https://aistarremover.example/privacy</loc><priority>0.3</priority></url>
-  <url><loc>https://aistarremover.example/terms</loc><priority>0.3</priority></url>
-  <url><loc>https://aistarremover.example/about</loc><priority>0.5</priority></url>
-  <url><loc>https://aistarremover.example/contact</loc><priority>0.5</priority></url>
+  <url><loc>https://mordillo98.github.io/ai-star-remover/</loc><priority>1.0</priority></url>
+  <url><loc>https://mordillo98.github.io/ai-star-remover/blog/remove-gemini-watermark</loc><priority>0.8</priority></url>
+  <url><loc>https://mordillo98.github.io/ai-star-remover/blog/is-gemini-watermark-copyrighted</loc><priority>0.7</priority></url>
+  <url><loc>https://mordillo98.github.io/ai-star-remover/blog/free-ai-watermark-removers-2026</loc><priority>0.7</priority></url>
+  <url><loc>https://mordillo98.github.io/ai-star-remover/blog/how-gemini-watermark-works</loc><priority>0.7</priority></url>
+  <url><loc>https://mordillo98.github.io/ai-star-remover/privacy</loc><priority>0.3</priority></url>
+  <url><loc>https://mordillo98.github.io/ai-star-remover/terms</loc><priority>0.3</priority></url>
+  <url><loc>https://mordillo98.github.io/ai-star-remover/about</loc><priority>0.5</priority></url>
+  <url><loc>https://mordillo98.github.io/ai-star-remover/contact</loc><priority>0.5</priority></url>
 </urlset>
