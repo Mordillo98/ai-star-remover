@@ -52,10 +52,41 @@
 
 
 <script>
-// ── The tool: reverse alpha blend, client-side. With live upload preview. ──
+// ── The tool: reverse alpha blend, client-side. Smart star detection. ──
 (async function () {
   function loadAlphaCanvas(src,n){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');c.width=c.height=n;c.getContext('2d').drawImage(i,0,0,n,n);res(c);};i.onerror=rej;i.src=src;});}
   const [a48,a96]=await Promise.all([loadAlphaCanvas('assets/bg_48.png',48),loadAlphaCanvas('assets/bg_96.png',96)]);
+
+  // Pre-build offsets AND full template data for NCC verification
+  function buildOffsetsAndTemplate(canvas, n) {
+    const ad = canvas.getContext('2d').getImageData(0, 0, n, n).data;
+    const sRows = [], sCols = [], bRows = [], bCols = [];
+    const tmpl = new Float32Array(n * n);
+    let tmplSum = 0;
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        const a = ad[(r * n + c) * 4] / 255;
+        const raw = ad[(r * n + c) * 4];  // 0-131 alpha map value
+        tmpl[r * n + c] = raw;
+        tmplSum += raw;
+        if (a > 0.05) { sRows.push(r); sCols.push(c); }
+        else if (a < 0.01) { bRows.push(r); bCols.push(c); }
+      }
+    }
+    const total = n * n;
+    const tmplMean = tmplSum / total;
+    const tmplSub = new Float32Array(total);
+    let tmplVar = 0;
+    for (let i = 0; i < total; i++) {
+      const v = tmpl[i] - tmplMean;
+      tmplSub[i] = v;
+      tmplVar += v * v;
+    }
+    const tmplStd = Math.sqrt(tmplVar);
+    return { sRows, sCols, bRows, bCols, n, alphaData: ad, tmpl, tmplMean, tmplSub, tmplStd };
+  }
+  const offsets48 = buildOffsetsAndTemplate(a48, 48);
+  const offsets96 = buildOffsetsAndTemplate(a96, 96);
 
   const drop=document.getElementById('drop'),fileInput=document.getElementById('file');
   fileInput.value=''; // clear any Firefox-restored file on reload
@@ -89,24 +120,122 @@
   fileInput.addEventListener('change',e=>loadFile(e.target.files[0],true));
   fileInput.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();loadFile(e.dataTransfer.files[0]);});
 
+  // Fast brightness-delta score at a position
+  function bdScore(gray, w, x, y, off) {
+    const { sRows, sCols, bRows, bCols, n } = off;
+    const base = y * w + x;
+    let ss = 0;
+    for (let i = 0; i < sRows.length; i++) ss += gray[base + sRows[i] * w + sCols[i]];
+    let bs = 0;
+    for (let i = 0; i < bRows.length; i++) bs += gray[base + bRows[i] * w + bCols[i]];
+    return ss / sRows.length - bs / bRows.length;
+  }
+
+  // Normalized cross-correlation (NCC) at a position — same as TM_CCOEFF_NORMED
+  function nccScore(gray, w, x, y, off) {
+    const { n, tmplSub, tmplStd } = off;
+    const total = n * n;
+    // Pass 1: patch mean
+    let psum = 0;
+    for (let r = 0; r < n; r++) {
+      const rowBase = (y + r) * w + x;
+      for (let c = 0; c < n; c++) psum += gray[rowBase + c];
+    }
+    const pmean = psum / total;
+    // Pass 2: dot product and patch std
+    let dot = 0, pvar = 0;
+    for (let r = 0; r < n; r++) {
+      const rowBase = (y + r) * w + x;
+      for (let c = 0; c < n; c++) {
+        const pv = gray[rowBase + c] - pmean;
+        dot += pv * tmplSub[r * n + c];
+        pvar += pv * pv;
+      }
+    }
+    const pstd = Math.sqrt(pvar);
+    if (pstd < 1e-10 || tmplStd < 1e-10) return 0;
+    return dot / (pstd * tmplStd);
+  }
+
+  // Find star: coarse brightness-delta scan → NCC-verify top 3 → decide
+  function findStarPosition(gray, w, h, off, cornerX, cornerY) {
+    const { sRows, bRows, n } = off;
+    if (!sRows.length || !bRows.length) return { x: 0, y: 0, score: 0, source: 'fail' };
+
+    const sx = Math.floor(w / 2), sy = Math.floor(h / 2);
+    const ex = w - n, ey = h - n;
+    if (sx > ex || sy > ey) return { x: ex, y: ey, score: 0, source: 'fail' };
+
+    // Coarse brightness-delta scan
+    const step = Math.max(4, Math.floor(n / 8));
+    const candidates = [];
+    for (let y = sy; y <= ey; y += step) {
+      for (let x = sx; x <= ex; x += step) {
+        const s = bdScore(gray, w, x, y, off);
+        candidates.push({ x, y, score: s });
+      }
+    }
+    candidates.sort((a, b) => b.score - a.score);
+
+    // NCC-verify top 3 candidates
+    const topK = candidates.slice(0, 3);
+    for (const c of topK) {
+      c.ncc = nccScore(gray, w, c.x, c.y, off);
+    }
+    topK.sort((a, b) => b.ncc - a.ncc);
+    const best = topK[0];
+
+    // NCC at corner
+    const cornerNcc = nccScore(gray, w, cornerX, cornerY, off);
+
+    // Decision logic (same thresholds as Python)
+    const TM_CORNER = 0.35, TM_MOVED = 0.65, TM_RATIO = 1.5;
+    if (cornerNcc > TM_CORNER) {
+      return { x: cornerX, y: cornerY, score: cornerNcc, source: 'corner' };
+    } else if (best.ncc > TM_MOVED && best.ncc > cornerNcc * TM_RATIO) {
+      return { x: best.x, y: best.y, score: best.ncc, source: 'detected' };
+    } else {
+      return { x: cornerX, y: cornerY, score: 0, source: 'fallback' };
+    }
+  }
 
   function remove(){
     if(!srcBitmap)return;
-    setStatus('Processing…');
+    setStatus('Scanning for watermark…');
     const w=srcBitmap.width,h=srcBitmap.height;
     const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
     const ctx=canvas.getContext('2d');ctx.drawImage(srcBitmap,0,0);
     const imgData=ctx.getImageData(0,0,w,h),data=imgData.data;
-    const large=w>1024&&h>1024, src=large?a96:a48, n=large?96:48, margin=large?64:32;
-    const x0=w-margin-n,y0=h-margin-n;
-    if(x0<0||y0<0){setStatus('Image too small for the patch.','err');return;}
-    const ad=src.getContext('2d').getImageData(0,0,n,n).data;
+    const large=w>1024&&h>1024, off=large?offsets96:offsets48, n=off.n;
+
+    // Build grayscale array
+    const gray = new Float32Array(w * h);
+    const len = w * h;
+    for (let i = 0; i < len; i++) {
+      const j = i * 4;
+      gray[i] = 0.299 * data[j] + 0.587 * data[j + 1] + 0.114 * data[j + 2];
+    }
+
+    // Find the star using brightness-delta + NCC verification
+    const margin = large ? 64 : 32;
+    const cornerX = w - margin - n, cornerY = h - margin - n;
+    const pos = findStarPosition(gray, w, h, off, cornerX, cornerY);
+    let x0 = pos.x, y0 = pos.y;
+    console.log('star: ' + pos.source + ' (' + x0 + ',' + y0 + ') ncc=' + pos.score.toFixed(3));
+    if(x0<0||y0<0){setStatus('Image too small.','err');return;}
+
+    setStatus(`Removing watermark at (${x0},${y0})…`);
+    const ad=off.alphaData;
     const TH=0.002,MAXA=0.99,L=255;let changed=0;
-    for(let r=0;r<n;r++)for(let c=0;c<n;c++){
-      let alpha=ad[(r*n+c)*4]/255; if(alpha<TH)continue; alpha=Math.min(alpha,MAXA);
-      const px=((y0+r)*w+(x0+c))*4;
-      for(let k=0;k<3;k++){const wm=data[px+k],o=(wm-alpha*L)/(1-alpha),v=Math.max(0,Math.min(255,Math.round(o)));
-        if(Math.abs(v-wm)>5)changed++; data[px+k]=v;}
+    for(let r=0;r<n;r++){
+      for(let c=0;c<n;c++){
+        let alpha=ad[(r*n+c)*4]/255; if(alpha<TH)continue; alpha=Math.min(alpha,MAXA);
+        const px=((y0+r)*w+(x0+c))*4;
+        for(let k=0;k<3;k++){
+          const wm=data[px+k],o=(wm-alpha*L)/(1-alpha),v=Math.max(0,Math.min(255,Math.round(o)));
+          if(Math.abs(v-wm)>5)changed++; data[px+k]=v;
+        }
+      }
     }
     ctx.putImageData(imgData,0,0);
     canvas.toBlob(blob=>{
