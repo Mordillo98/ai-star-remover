@@ -55,7 +55,13 @@
 // ── The tool: reverse alpha blend, client-side. Smart star detection. ──
 (async function () {
   function loadAlphaCanvas(src,n){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');c.width=c.height=n;c.getContext('2d').drawImage(i,0,0,n,n);res(c);};i.onerror=rej;i.src=src;});}
-  const [a48,a96]=await Promise.all([loadAlphaCanvas('assets/bg_48.png',48),loadAlphaCanvas('assets/bg_96.png',96)]);
+  function tryLoadAlphaCanvas(src,n){return new Promise((res)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');c.width=c.height=n;c.getContext('2d').drawImage(i,0,0,n,n);res(c);};i.onerror=()=>res(null);i.src=src;});}
+  const [a48,a96,a48b,a96b]=await Promise.all([
+    loadAlphaCanvas('assets/bg_48.png',48),
+    loadAlphaCanvas('assets/bg_96.png',96),
+    tryLoadAlphaCanvas('assets/bg_48_new.png',48),
+    tryLoadAlphaCanvas('assets/bg_96_new.png',96),
+  ]);
 
   // Pre-build offsets AND full template data for NCC verification
   function buildOffsetsAndTemplate(canvas, n) {
@@ -85,8 +91,11 @@
     const tmplStd = Math.sqrt(tmplVar);
     return { sRows, sCols, bRows, bCols, n, alphaData: ad, tmpl, tmplMean, tmplSub, tmplStd };
   }
-  const offsets48 = buildOffsetsAndTemplate(a48, 48);
-  const offsets96 = buildOffsetsAndTemplate(a96, 96);
+  // ponytail: dual alpha maps — old for legacy star, new for Gemini's updated watermark
+  const maps48 = [buildOffsetsAndTemplate(a48, 48)];
+  const maps96 = [buildOffsetsAndTemplate(a96, 96)];
+  if (a48b) maps48.push(buildOffsetsAndTemplate(a48b, 48));
+  if (a96b) maps96.push(buildOffsetsAndTemplate(a96b, 96));
 
   const drop=document.getElementById('drop'),fileInput=document.getElementById('file');
   fileInput.value=''; // clear any Firefox-restored file on reload
@@ -188,46 +197,51 @@
     return lo;
   }
 
-  // Find star: coarse brightness-delta scan → NCC-verify top 3 → decide
-  function findStarPosition(gray, w, h, off, cornerX, cornerY) {
-    const { sRows, bRows, n } = off;
-    if (!sRows.length || !bRows.length) return { x: 0, y: 0, score: 0, source: 'fail' };
+  // Find star: try all alpha maps, pick the one with highest NCC
+  function findStarPosition(gray, w, h, maps, cornerX, cornerY) {
+    let bestResult = null, bestOff = maps[0];
+    for (const off of maps) {
+      const { sRows, bRows, n } = off;
+      if (!sRows.length || !bRows.length) continue;
 
-    const sx = Math.floor(w / 2), sy = Math.floor(h / 2);
-    const ex = w - n, ey = h - n;
-    if (sx > ex || sy > ey) return { x: ex, y: ey, score: 0, source: 'fail' };
+      const sx = Math.floor(w / 2), sy = Math.floor(h / 2);
+      const ex = w - n, ey = h - n;
+      if (sx > ex || sy > ey) continue;
 
-    // Coarse brightness-delta scan
-    const step = Math.max(4, Math.floor(n / 8));
-    const candidates = [];
-    for (let y = sy; y <= ey; y += step) {
-      for (let x = sx; x <= ex; x += step) {
-        const s = bdScore(gray, w, x, y, off);
-        candidates.push({ x, y, score: s });
+      // Coarse brightness-delta scan
+      const step = Math.max(4, Math.floor(n / 8));
+      const candidates = [];
+      for (let y = sy; y <= ey; y += step) {
+        for (let x = sx; x <= ex; x += step) {
+          candidates.push({ x, y, score: bdScore(gray, w, x, y, off) });
+        }
+      }
+      candidates.sort((a, b) => b.score - a.score);
+
+      // NCC-verify top 3
+      const topK = candidates.slice(0, 3);
+      for (const c of topK) c.ncc = nccScore(gray, w, c.x, c.y, off);
+      topK.sort((a, b) => b.ncc - a.ncc);
+
+      // NCC at corner
+      const cornerNcc = nccScore(gray, w, cornerX, cornerY, off);
+
+      const TM_CORNER = 0.35, TM_MOVED = 0.65, TM_RATIO = 1.5;
+      let result;
+      if (cornerNcc > TM_CORNER) {
+        result = { x: cornerX, y: cornerY, score: cornerNcc, source: 'corner' };
+      } else if (topK[0].ncc > TM_MOVED && topK[0].ncc > cornerNcc * TM_RATIO) {
+        result = { x: topK[0].x, y: topK[0].y, score: topK[0].ncc, source: 'detected' };
+      } else {
+        result = { x: cornerX, y: cornerY, score: 0, source: 'fallback' };
+      }
+
+      if (!bestResult || result.score > bestResult.score) {
+        bestResult = result;
+        bestOff = off;
       }
     }
-    candidates.sort((a, b) => b.score - a.score);
-
-    // NCC-verify top 3 candidates
-    const topK = candidates.slice(0, 3);
-    for (const c of topK) {
-      c.ncc = nccScore(gray, w, c.x, c.y, off);
-    }
-    topK.sort((a, b) => b.ncc - a.ncc);
-    const best = topK[0];
-
-    // NCC at corner
-    const cornerNcc = nccScore(gray, w, cornerX, cornerY, off);
-
-    // Decision logic (same thresholds as Python)
-    const TM_CORNER = 0.35, TM_MOVED = 0.65, TM_RATIO = 1.5;
-    if (cornerNcc > TM_CORNER) {
-      return { x: cornerX, y: cornerY, score: cornerNcc, source: 'corner' };
-    } else if (best.ncc > TM_MOVED && best.ncc > cornerNcc * TM_RATIO) {
-      return { x: best.x, y: best.y, score: best.ncc, source: 'detected' };
-    } else {
-      return { x: cornerX, y: cornerY, score: 0, source: 'fallback' };
-    }
+    return { ...bestResult, off: bestOff };
   }
 
   function remove(){
@@ -237,7 +251,7 @@
     const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
     const ctx=canvas.getContext('2d');ctx.drawImage(srcBitmap,0,0);
     const imgData=ctx.getImageData(0,0,w,h),data=imgData.data;
-    const large=w>1024&&h>1024, off=large?offsets96:offsets48, n=off.n;
+    const large=w>1024&&h>1024, maps=large?maps96:maps48, n=maps[0].n;
 
     // Build grayscale array
     const gray = new Float32Array(w * h);
@@ -250,7 +264,8 @@
     // Find the star using brightness-delta + NCC verification
     const margin = large ? 64 : 32;
     const cornerX = w - margin - n, cornerY = h - margin - n;
-    const pos = findStarPosition(gray, w, h, off, cornerX, cornerY);
+    const pos = findStarPosition(gray, w, h, maps, cornerX, cornerY);
+    const off = pos.off;
     let x0 = pos.x, y0 = pos.y;
     console.log('star: ' + pos.source + ' (' + x0 + ',' + y0 + ') ncc=' + pos.score.toFixed(3));
     if(x0<0||y0<0){setStatus('Image too small.','err');return;}
