@@ -192,8 +192,9 @@
       if (px < 0 || py < 0) continue;
       maps.forEach((off, i) => {
         const score = nccScore(gray, w, px, py, off);
-        // ponytail: prefer Pro (index 1) on near-ties — confirmed working on current Gemini
-        if (score > best.score + 0.05 || (score > best.score - 0.05 && i > 0))
+        // ponytail: prefer Pro (index 1) on near-ties at margin 192 only
+        const isPro = i > 0;
+        if (score > best.score + 0.05 || (score > best.score - 0.05 && isPro && margin === 192))
           best = { score, x: px, y: py, off };
       });
     }
