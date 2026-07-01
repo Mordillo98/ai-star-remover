@@ -56,27 +56,24 @@
 (async function () {
   function loadAlphaCanvas(src,n){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');c.width=c.height=n;c.getContext('2d').drawImage(i,0,0,n,n);res(c);};i.onerror=rej;i.src=src;});}
   function tryLoadAlphaCanvas(src,n){return new Promise((res)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');c.width=c.height=n;c.getContext('2d').drawImage(i,0,0,n,n);res(c);};i.onerror=()=>res(null);i.src=src;});}
-  const [a48,a96,a48b,a96b]=await Promise.all([
+  const [a48,a96,a48p,a96p]=await Promise.all([
     loadAlphaCanvas('assets/bg_48.png',48),
     loadAlphaCanvas('assets/bg_96.png',96),
-    tryLoadAlphaCanvas('assets/bg_48_new.png',48),
-    tryLoadAlphaCanvas('assets/bg_96_new.png',96),
+    tryLoadAlphaCanvas('assets/bg_48_pro.png',48),
+    tryLoadAlphaCanvas('assets/bg_96_pro.png',96),
   ]);
+  // ponytail: two alpha maps — old (legacy) + Pro (current Gemini 2 & Pro)
 
   // Pre-build offsets AND full template data for NCC verification
   function buildOffsetsAndTemplate(canvas, n) {
     const ad = canvas.getContext('2d').getImageData(0, 0, n, n).data;
-    const sRows = [], sCols = [], bRows = [], bCols = [];
     const tmpl = new Float32Array(n * n);
     let tmplSum = 0;
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
-        const a = ad[(r * n + c) * 4] / 255;
-        const raw = ad[(r * n + c) * 4];  // 0-131 alpha map value
+        const raw = ad[(r * n + c) * 4];  // 0-255 alpha map value
         tmpl[r * n + c] = raw;
         tmplSum += raw;
-        if (a > 0.05) { sRows.push(r); sCols.push(c); }
-        else if (a < 0.01) { bRows.push(r); bCols.push(c); }
       }
     }
     const total = n * n;
@@ -89,13 +86,13 @@
       tmplVar += v * v;
     }
     const tmplStd = Math.sqrt(tmplVar);
-    return { sRows, sCols, bRows, bCols, n, alphaData: ad, tmpl, tmplMean, tmplSub, tmplStd };
+    return { n, alphaData: ad, tmpl, tmplMean, tmplSub, tmplStd };
   }
   // ponytail: dual alpha maps — old for legacy star, new for Gemini's updated watermark
   const maps48 = [buildOffsetsAndTemplate(a48, 48)];
   const maps96 = [buildOffsetsAndTemplate(a96, 96)];
-  if (a48b) maps48.push(buildOffsetsAndTemplate(a48b, 48));
-  if (a96b) maps96.push(buildOffsetsAndTemplate(a96b, 96));
+  if (a48p) maps48.push(buildOffsetsAndTemplate(a48p, 48));
+  if (a96p) maps96.push(buildOffsetsAndTemplate(a96p, 96));
 
   const drop=document.getElementById('drop'),fileInput=document.getElementById('file');
   fileInput.value=''; // clear any Firefox-restored file on reload
@@ -128,18 +125,6 @@
   document.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');loadFile(e.dataTransfer.files[0]);});
   fileInput.addEventListener('change',e=>loadFile(e.target.files[0],true));
   fileInput.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();loadFile(e.dataTransfer.files[0]);});
-
-  // Fast brightness-delta score at a position
-  function bdScore(gray, w, x, y, off) {
-    const { sRows, sCols, bRows, bCols, n } = off;
-    const base = y * w + x;
-    let ss = 0;
-    for (let i = 0; i < sRows.length; i++) ss += gray[base + sRows[i] * w + sCols[i]];
-    let bs = 0;
-    for (let i = 0; i < bRows.length; i++) bs += gray[base + bRows[i] * w + bCols[i]];
-    return ss / sRows.length - bs / bRows.length;
-  }
-
   // Normalized cross-correlation (NCC) at a position — same as TM_CCOEFF_NORMED
   function nccScore(gray, w, x, y, off) {
     const { n, tmplSub, tmplStd } = off;
@@ -197,51 +182,22 @@
     return lo;
   }
 
-  // Find star: try all alpha maps, pick the one with highest NCC
-  function findStarPosition(gray, w, h, maps, cornerX, cornerY) {
-    let bestResult = null, bestOff = maps[0];
-    for (const off of maps) {
-      const { sRows, bRows, n } = off;
-      if (!sRows.length || !bRows.length) continue;
-
-      const sx = Math.floor(w / 2), sy = Math.floor(h / 2);
-      const ex = w - n, ey = h - n;
-      if (sx > ex || sy > ey) continue;
-
-      // Coarse brightness-delta scan
-      const step = Math.max(4, Math.floor(n / 8));
-      const candidates = [];
-      for (let y = sy; y <= ey; y += step) {
-        for (let x = sx; x <= ex; x += step) {
-          candidates.push({ x, y, score: bdScore(gray, w, x, y, off) });
-        }
-      }
-      candidates.sort((a, b) => b.score - a.score);
-
-      // NCC-verify top 3
-      const topK = candidates.slice(0, 3);
-      for (const c of topK) c.ncc = nccScore(gray, w, c.x, c.y, off);
-      topK.sort((a, b) => b.ncc - a.ncc);
-
-      // NCC at corner
-      const cornerNcc = nccScore(gray, w, cornerX, cornerY, off);
-
-      const TM_CORNER = 0.35, TM_MOVED = 0.65, TM_RATIO = 1.5;
-      let result;
-      if (cornerNcc > TM_CORNER) {
-        result = { x: cornerX, y: cornerY, score: cornerNcc, source: 'corner' };
-      } else if (topK[0].ncc > TM_MOVED && topK[0].ncc > cornerNcc * TM_RATIO) {
-        result = { x: topK[0].x, y: topK[0].y, score: topK[0].ncc, source: 'detected' };
-      } else {
-        result = { x: cornerX, y: cornerY, score: 0, source: 'fallback' };
-      }
-
-      if (!bestResult || result.score > bestResult.score) {
-        bestResult = result;
-        bestOff = off;
-      }
+  // ponytail: position formula — star is at (w-margin-n, h-margin-n)
+  // Margins: 192 (current Gemini) or 64 (legacy). Try both × both alphas, pick best NCC.
+  function findStarPosition(gray, w, h, maps, n) {
+    const margins = n === 96 ? [192, 64] : [96, 32];
+    let best = { score: -999, x: 0, y: 0, off: maps[0] };
+    for (const margin of margins) {
+      const px = w - margin - n, py = h - margin - n;
+      if (px < 0 || py < 0) continue;
+      maps.forEach((off, i) => {
+        const score = nccScore(gray, w, px, py, off);
+        // ponytail: prefer Pro (index 1) on near-ties — confirmed working on current Gemini
+        if (score > best.score + 0.05 || (score > best.score - 0.05 && i > 0))
+          best = { score, x: px, y: py, off };
+      });
     }
-    return { ...bestResult, off: bestOff };
+    return best;
   }
 
   function remove(){
@@ -261,13 +217,11 @@
       gray[i] = 0.299 * data[j] + 0.587 * data[j + 1] + 0.114 * data[j + 2];
     }
 
-    // Find the star using brightness-delta + NCC verification
-    const margin = large ? 64 : 32;
-    const cornerX = w - margin - n, cornerY = h - margin - n;
-    const pos = findStarPosition(gray, w, h, maps, cornerX, cornerY);
+    // Find star: position formula (margins 192/64) × both alpha maps, pick best NCC
+    const pos = findStarPosition(gray, w, h, maps, n);
     const off = pos.off;
     let x0 = pos.x, y0 = pos.y;
-    console.log('star: ' + pos.source + ' (' + x0 + ',' + y0 + ') ncc=' + pos.score.toFixed(3));
+    console.log('star: (' + x0 + ',' + y0 + ') ncc=' + pos.score.toFixed(3));
     if(x0<0||y0<0){setStatus('Image too small.','err');return;}
 
     setStatus(`Removing watermark at (${x0},${y0})…`);
