@@ -157,6 +157,37 @@
     return dot / (pstd * tmplStd);
   }
 
+  // Binary-search optimal alpha scale to avoid black pixels
+  // ponytail: Gemini changes opacity over time — this adapts per image
+  function findOptimalScale(data, w, x, y, off) {
+    const { n, alphaData } = off;
+    const TH = 0.002, MAXA = 0.99, L = 255;
+    let lo = 0.05, hi = 1.0;
+    for (let iter = 0; iter < 15; iter++) {
+      const mid = (lo + hi) / 2;
+      let neg = 0, total = 0;
+      for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+          const a = (alphaData[(r * n + c) * 4] / 255) * mid;
+          if (a < TH) continue;
+          const am = Math.min(a, MAXA);
+          const px = ((y + r) * w + (x + c)) * 4;
+          for (let ch = 0; ch < 3; ch++) {
+            const wm = data[px + ch];
+            if (wm <= 5) continue;  // skip already-black pixels
+            const orig = (wm - am * L) / (1 - am);
+            total++;
+            if (orig < 0) neg++;
+          }
+        }
+      }
+      if (total === 0) { lo = mid; continue; }
+      if (neg / total < 0.005) lo = mid;  // <0.5% black → try higher
+      else hi = mid;
+    }
+    return lo;
+  }
+
   // Find star: coarse brightness-delta scan → NCC-verify top 3 → decide
   function findStarPosition(gray, w, h, off, cornerX, cornerY) {
     const { sRows, bRows, n } = off;
@@ -227,9 +258,14 @@
     setStatus(`Removing watermark at (${x0},${y0})…`);
     const ad=off.alphaData;
     const TH=0.002,MAXA=0.99,L=255;let changed=0;
+
+    // Auto-scale alpha to avoid black pixels (Gemini changes opacity)
+    const scale = findOptimalScale(data, w, x0, y0, off);
+    console.log('alpha scale:', scale.toFixed(3));
+
     for(let r=0;r<n;r++){
       for(let c=0;c<n;c++){
-        let alpha=ad[(r*n+c)*4]/255; if(alpha<TH)continue; alpha=Math.min(alpha,MAXA);
+        let alpha=(ad[(r*n+c)*4]/255)*scale; if(alpha<TH)continue; alpha=Math.min(alpha,MAXA);
         const px=((y0+r)*w+(x0+c))*4;
         for(let k=0;k<3;k++){
           const wm=data[px+k],o=(wm-alpha*L)/(1-alpha),v=Math.max(0,Math.min(255,Math.round(o)));
